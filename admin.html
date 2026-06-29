@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skincarebd Admin</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="background:#f0f2f5;">
+
+    <div class="admin-container">
+        <h2 style="color:#ff6b81; margin-bottom:20px;">Skincarebd Admin Dashboard</h2>
+
+        <div id="login-section">
+            <div class="form-group"><input type="email" id="email" placeholder="Admin Email"></div>
+            <div class="form-group"><input type="password" id="password" placeholder="Password"></div>
+            <button class="btn" id="login-btn" style="background:#ff6b81; color:#fff; width:100%;">Log In</button>
+        </div>
+
+        <div id="upload-section" class="hidden">
+            <div class="form-group"><input type="text" id="p-name" placeholder="Product Name"></div>
+            <div class="form-group">
+                <select id="p-cat">
+                    <option value="Facewash">Facewash</option>
+                    <option value="Serum">Serum</option>
+                    <option value="Moisturizer">Moisturizer</option>
+                </select>
+            </div>
+            <div class="form-group"><input type="text" id="p-price" placeholder="Price (e.g. ৳ 1,200)"></div>
+            <div class="form-group"><label>Product Image:</label><input type="file" id="p-img" accept="image/*"></div>
+            <button class="btn" id="upload-btn" style="background:#ff6b81; color:#fff; width:100%;">Upload Product</button>
+            <button class="btn" id="logout-btn" style="background:#333; color:#fff; width:100%; margin-top:10px;">Log Out</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+        // **PASTE YOUR CONFIG HERE IN STEP 4**
+        const firebaseConfig = {
+
+  apiKey: "AIzaSyDaei_nCLLaDuYtAeSYqjGjVSlFpUUZmWc",
+
+  authDomain: "skincarebd-86462.firebaseapp.com",
+
+  projectId: "skincarebd-86462",
+
+  storageBucket: "skincarebd-86462.firebasestorage.app",
+
+  messagingSenderId: "324894116147",
+
+  appId: "1:324894116147:web:c2c1bae02b0e267f92d646",
+
+  measurementId: "G-VQG56QQTT1"
+
+};
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        document.getElementById('login-btn').addEventListener('click', () => {
+            signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value)
+                .catch(err => alert("Error: " + err.message));
+        });
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('upload-section').classList.remove('hidden');
+            } else {
+                document.getElementById('login-section').classList.remove('hidden');
+                document.getElementById('upload-section').classList.add('hidden');
+            }
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
+
+        document.getElementById('upload-btn').addEventListener('click', async () => {
+            const name = document.getElementById('p-name').value;
+            const cat = document.getElementById('p-cat').value;
+            const price = document.getElementById('p-price').value;
+            const file = document.getElementById('p-img').files[0];
+
+            if(!name || !price || !file) return alert("Fill all fields!");
+            document.getElementById('upload-btn').innerText = "Uploading...";
+
+            try {
+                const imgRef = ref(storage, 'products/' + Date.now() + "_" + file.name);
+                await uploadBytes(imgRef, file);
+                const url = await getDownloadURL(imgRef);
+
+                await addDoc(collection(db, "products"), { name, category: cat, price, image: url });
+                alert("Product Added!");
+                location.reload();
+            } catch (err) { alert(err.message); }
+        });
+    </script>
+</body>
+</html>

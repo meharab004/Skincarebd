@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skincarebd | Premium Skincare</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <div class="logo">✨ Skincarebd</div>
+        <nav>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#products">Shop</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="home" class="hero">
+        <h1>Premium & Korean Skincare</h1>
+        <p>Your journey to glowing skin starts here.</p>
+    </section>
+
+    <section id="products" class="products-section">
+        <h2>Our Products</h2>
+        <div class="product-grid" id="product-grid">Loading products...</div>
+    </section>
+
+    <footer id="contact">
+        <h3>Contact Skincarebd</h3>
+        <p>📞 Phone: 01620137902 | ✉️ Email: skincarebd26@gmail.com</p>
+        <p style="margin-top:15px;"><a href="#" style="color:#ff6b81;">Facebook</a> | <a href="#" style="color:#ff6b81;">Instagram</a></p>
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // **PASTE YOUR CONFIG HERE IN STEP 4**
+        const firebaseConfig = {
+
+  apiKey: "AIzaSyDaei_nCLLaDuYtAeSYqjGjVSlFpUUZmWc",
+
+  authDomain: "skincarebd-86462.firebaseapp.com",
+
+  projectId: "skincarebd-86462",
+
+  storageBucket: "skincarebd-86462.firebasestorage.app",
+
+  messagingSenderId: "324894116147",
+
+  appId: "1:324894116147:web:c2c1bae02b0e267f92d646",
+
+  measurementId: "G-VQG56QQTT1"
+
+};
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function loadProducts() {
+            const grid = document.getElementById('product-grid');
+            try {
+                const snapshot = await getDocs(collection(db, "products"));
+                grid.innerHTML = "";
+                snapshot.forEach((doc) => {
+                    const p = doc.data();
+                    grid.innerHTML += `
+                        <div class="product-card">
+                            <img src="${p.image}">
+                            <p style="font-size:0.8rem; color:#888;">${p.category}</p>
+                            <h3>${p.name}</h3>
+                            <p class="price">${p.price}</p>
+                        </div>`;
+                });
+            } catch (err) { grid.innerHTML = "Error loading products."; }
+        }
+        loadProducts();
+    </script>
+</body>
+</html>
