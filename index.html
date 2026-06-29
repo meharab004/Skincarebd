@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skincarebd | Premium Skincare</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body>
 
@@ -22,62 +23,149 @@
     <section id="home" class="hero">
         <h1>Premium & Korean Skincare</h1>
         <p>Your journey to glowing skin starts here.</p>
+        <a href="#products" class="btn">Explore Shop</a>
     </section>
 
     <section id="products" class="products-section">
         <h2>Our Products</h2>
-        <div class="product-grid" id="product-grid">Loading products...</div>
+        <div class="product-grid" id="product-grid">Loading premium products...</div>
     </section>
+
+    <div id="order-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal" id="close-modal">&times;</span>
+            <h3>Checkout Details</h3>
+            <p id="modal-product-name" style="font-weight: bold; color: #B59B92; margin-bottom: 20px; font-size: 1.1rem;"></p>
+            
+            <div class="form-group"><input type="text" id="cust-name" placeholder="Your Full Name" required></div>
+            <div class="form-group"><input type="text" id="cust-phone" placeholder="Your Phone Number" required></div>
+            <div class="form-group"><input type="text" id="cust-address" placeholder="Delivery Address" required></div>
+            
+            <button class="btn" id="confirm-order-btn" style="width:100%; margin-top: 10px;">Confirm & Place Order</button>
+        </div>
+    </div>
+
+    <a href="https://wa.me/8801620137902" class="floating-whatsapp" target="_blank" title="Chat with us on WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+    </a>
 
     <footer id="contact">
         <h3>Contact Skincarebd</h3>
-        <p>📞 Phone: 01620137902 | ✉️ Email: skincarebd26@gmail.com</p>
-        <p style="margin-top:15px;"><a href="#" style="color:#ff6b81;">Facebook</a> | <a href="#" style="color:#ff6b81;">Instagram</a></p>
+        <p style="margin-bottom: 10px;">📞 Phone: 01620137902 | ✉️ Email: skincarebd26@gmail.com</p>
+        <p>Follow us on social media for skincare tips and routines:</p>
+        <p style="margin-top:15px; font-size: 1.1rem;">
+            <a href="https://facebook.com" target="_blank" style="margin-right: 15px;">Facebook</a> | 
+            <a href="https://instagram.com" target="_blank" style="margin-left: 15px;">Instagram</a>
+        </p>
+        <p style="margin-top: 40px; font-size: 0.8rem; color: #777;">&copy; 2026 Skincarebd. All Rights Reserved.</p>
     </footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // **PASTE YOUR CONFIG HERE IN STEP 4**
+        // Your Secure Project Keys
         const firebaseConfig = {
-
-  apiKey: "AIzaSyDaei_nCLLaDuYtAeSYqjGjVSlFpUUZmWc",
-
-  authDomain: "skincarebd-86462.firebaseapp.com",
-
-  projectId: "skincarebd-86462",
-
-  storageBucket: "skincarebd-86462.firebasestorage.app",
-
-  messagingSenderId: "324894116147",
-
-  appId: "1:324894116147:web:c2c1bae02b0e267f92d646",
-
-  measurementId: "G-VQG56QQTT1"
-
-};
+            apiKey: "AIzaSyDaei_nCLLaDuYtAeSYqjGjVSlFpUUZmWc",
+            authDomain: "skincarebd-86462.firebaseapp.com",
+            projectId: "skincarebd-86462",
+            storageBucket: "skincarebd-86462.firebasestorage.app",
+            messagingSenderId: "324894116147",
+            appId: "1:324894116147:web:c2c1bae02b0e267f92d646"
+        };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        let selectedProduct = {};
+
+        // Fetch and display items dynamically from Firestore database
         async function loadProducts() {
             const grid = document.getElementById('product-grid');
             try {
                 const snapshot = await getDocs(collection(db, "products"));
+                if (snapshot.empty) {
+                    grid.innerHTML = "<p>No products available yet. Add some from your admin page!</p>";
+                    return;
+                }
                 grid.innerHTML = "";
                 snapshot.forEach((doc) => {
                     const p = doc.data();
-                    grid.innerHTML += `
-                        <div class="product-card">
-                            <img src="${p.image}">
-                            <p style="font-size:0.8rem; color:#888;">${p.category}</p>
-                            <h3>${p.name}</h3>
-                            <p class="price">${p.price}</p>
-                        </div>`;
+                    
+                    const card = document.createElement('div');
+                    card.classList.add('product-card');
+                    card.innerHTML = `
+                        <img src="${p.image}" alt="${p.name}">
+                        <p style="font-size:0.8rem; color:#888; text-transform:uppercase; letter-spacing: 1px; margin-bottom: 5px;">${p.category}</p>
+                        <h3>${p.name}</h3>
+                        <p class="price">${p.price}</p>
+                        <button class="btn order-trigger" style="padding: 10px 22px; font-size: 13px; width: 100%;">Order Now</button>
+                    `;
+
+                    // Handle "Order Now" Click
+                    card.querySelector('.order-trigger').addEventListener('click', () => {
+                        selectedProduct = { name: p.name, price: p.price };
+                        document.getElementById('modal-product-name').innerText = `Product: ${p.name} - Price: ${p.price}`;
+                        document.getElementById('order-modal').classList.remove('hidden');
+                    });
+
+                    grid.appendChild(card);
                 });
-            } catch (err) { grid.innerHTML = "Error loading products."; }
+            } catch (err) { 
+                grid.innerHTML = "<p>Error displaying your products catalog.</p>"; 
+            }
         }
+
+        // Close Pop-up Window Box
+        document.getElementById('close-modal').addEventListener('click', () => {
+            document.getElementById('order-modal').classList.add('hidden');
+        });
+
+        // Form Process Action
+        document.getElementById('confirm-order-btn').addEventListener('click', async () => {
+            const name = document.getElementById('cust-name').value.trim();
+            const phone = document.getElementById('cust-phone').value.trim();
+            const address = document.getElementById('cust-address').value.trim();
+
+            if(!name || !phone || !address) {
+                return alert("Please completely fill out your Name, Phone Number, and Address!");
+            }
+
+            try {
+                // 1. Save data directly inside Firebase free Firestore database
+                await addDoc(collection(db, "orders"), {
+                    customerName: name,
+                    customerPhone: phone,
+                    customerAddress: address,
+                    productOrdered: selectedProduct.name,
+                    price: selectedProduct.price,
+                    timestamp: new Date()
+                });
+
+                // 2. Draft the exact dispatch details message
+                const message = `Hello Skincarebd!\nI would like to purchase the following item:\n\n🛍️ Product: ${selectedProduct.name}\n💰 Price: ${selectedProduct.price}\n\nDelivery Info:\n👤 Name: ${name}\n📞 Phone: ${phone}\n📍 Address: ${address}`;
+                
+                // 3. Open WhatsApp link automation
+                const whatsappUrl = `https://wa.me/8801620137902?text=${encodeURIComponent(message)}`;
+                window.open(whatsappUrl, '_blank');
+
+                // 4. Open Email window automation
+                const mailtoUrl = `mailto:skincarebd26@gmail.com?subject=New Order: ${name}&body=${encodeURIComponent(message)}`;
+                window.open(mailtoUrl, '_blank');
+
+                alert("Fantastic! Your order has been registered. Redirecting to WhatsApp and Email for confirmation details...");
+                document.getElementById('order-modal').classList.add('hidden');
+                
+                // Clean the text fields out for next use
+                document.getElementById('cust-name').value = "";
+                document.getElementById('cust-phone').value = "";
+                document.getElementById('cust-address').value = "";
+
+            } catch (err) { 
+                alert("Database logging error: " + err.message); 
+            }
+        });
+
         loadProducts();
     </script>
 </body>
