@@ -293,3 +293,13 @@ html {
 .hidden { 
     display: none !important; 
 }
+/* --- CONTACT SECTION STYLING --- */
+.contact-section { padding: 80px 20px; background: #FFFFFF; border-top: 1px solid #EAE6DF; text-align: center; }
+.contact-section h2 { font-family: 'Playfair Display', serif; font-size: 2.5rem; margin-bottom: 50px; font-weight: 400; }
+.contact-container { max-width: 1000px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 40px; text-align: left; }
+.contact-info, .contact-form { flex: 1; min-width: 300px; }
+.contact-info h3, .contact-form h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 20px; color: #B59B92; }
+.social-links { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+.social-btn { display: inline-block; padding: 10px 20px; background: #FAFAFA; border: 1px solid #EAE6DF; color: #2C2C2C; text-decoration: none; font-weight: bold; border-radius: 4px; transition: all 0.3s ease; }
+.social-btn i { margin-right: 10px; font-size: 1.2rem; }
+.social-btn:hover { background: #B59B92; color: #FFF; border-color: #B59B92; }
